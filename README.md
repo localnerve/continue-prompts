@@ -32,6 +32,25 @@ per-turn cost low the rest of the time.
 
 ---
 
+## Tools available and their focus
+
+- **Playwright (`browser_*`, 20 tools)** — browser automation and runtime inspection: navigate/
+  interact with a live page, capture accessibility snapshots or screenshots, read console
+  messages and network requests. Used for visual/runtime verification and test debugging.
+- **GitHub (read-only tools only)** — live repo state: file contents, commits, branches, tags,
+  releases, issues, and pull requests, plus code/repo/user search. Token is read-only, so
+  mutation tools (comment, merge, create, update, delete) are explicitly excluded from use.
+- **Brave Web Search (`brave_web_search`)** — general external web search for anything current
+  or outside the other tools' scope (library comparisons, CVEs, changelogs, general research).
+- **Context7 (`resolve-library-id` + `query-docs`)** — current, version-pinned library/framework
+  documentation. Two-step: resolve the package name to a Context7 ID, then query docs with it.
+- **specification.website** — a 168-topic baseline of web platform standards (Foundations, SEO,
+  Accessibility, Security, Well-Known URIs, Agent Readiness, Performance, Privacy, Resilience,
+  Internationalisation) sourced from WHATWG/W3C/IETF/WCAG. Used during planning to check for
+  gaps against a "correctly built site" baseline — not a coding-time linter.
+
+---
+
 ## Invoking the full ruleset
 
 The exact syntax depends on your harness:
