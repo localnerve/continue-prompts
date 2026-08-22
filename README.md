@@ -1,14 +1,11 @@
 # Tool Routing Directives — Quick Reference
 
 This is a two-file pattern for steering an AI coding assistant's tool use. It's not specific
-to any one harness — the same split works in Continue, Cursor, Cline, Windsurf, or any setup
-that distinguishes between "always-loaded system context" and "on-demand invokable context."
-File names/locations below are the Continue.dev convention; adapt paths to whatever your
-harness expects.
+to any one harness — the same split works in Continue.dev, GitHub Copilot, Cline, Kilo Code,
+or any setup that distinguishes between "always-loaded system context" and "on-demand
+invokable context."
 
 ## The always-on tripwire (a "rule")
-**Continue.dev location:** `.continue/rules/tool-routing-reminder.md`
-**VS Code Copilot equivalent:** `.github/copilot-instructions.md` or `.github/instructions/*.instructions.md` (with an `applyTo` glob)
 **Loads:** Automatically, every turn (scoped to relevant file types)
 **What it does:** A ~4-line nudge, cheap enough to sit in context permanently without adding
 real latency or noise. It doesn't contain routing logic — it just tells the model "if this
@@ -18,8 +15,6 @@ degrade a local/small model on every single message, whether or not that message
 a tool.
 
 ## The full routing logic (a "prompt" / on-demand context)
-**Continue.dev location:** `.continue/prompts/route-to-tools.prompt.md`
-**VS Code Copilot equivalent:** `.github/prompts/route-to-tools.prompt.md`
 **Loads:** Only when explicitly invoked
 **What it does:** The actual decision tree — which tool source to use for a given request, in
 what order, with real tool names and any hard constraints (e.g. a read-only token's
@@ -29,6 +24,23 @@ turns where it's actually relevant.
 **How they work together:** the tripwire is always watching in the background and can point
 the model toward the full ruleset; the full ruleset itself only loads when called, keeping
 per-turn cost low the rest of the time.
+
+---
+
+## Harness configuration locations
+
+File paths and terminology differ by harness. This is where each piece lives:
+
+| Harness | Always-on rule location | On-demand prompt/workflow location |
+|---|---|---|
+| Continue.dev | `.continue/rules/*.md` (`alwaysApply: true`) | `.continue/prompts/*.prompt.md` |
+| GitHub Copilot (VS Code) | `.github/copilot-instructions.md` or `.github/instructions/*.instructions.md` (with an `applyTo` glob) | `.github/prompts/*.prompt.md` |
+| Cline | `.clinerules/*.md` or a single `.clinerules` file (always loaded) | `.clinerules/workflows/*.md` ("workflows" — inject on-demand only, don't sit in system context) |
+| Kilo Code | rules block in `kilo.jsonc` (project root or `.kilo/kilo.jsonc`), or mode-specific rules in `.kilo/rules-{mode}/` | `.kilo/commands/*.md` ("workflows"/slash commands) |
+
+Note: Kilo Code's config format has changed across major versions (legacy `.kilocoderules` /
+`.kilocode/workflows/` vs. the current `kilo.jsonc` + `.kilo/commands/` layout) — check your
+installed version's docs if the above doesn't match what you see.
 
 ---
 
@@ -58,15 +70,20 @@ The exact syntax depends on your harness:
 | Harness | Typical invocation |
 |---|---|
 | Continue.dev | `/route-to-tools <your request>` |
-| GitHub Copilot (VS Code) | `/route-to-tools <your request>` — prompt file lives at `.github/prompts/route-to-tools.prompt.md`; the tripwire equivalent goes in `.github/copilot-instructions.md` or `.github/instructions/*.instructions.md` (always-on, no invocation needed) |
-| Cursor | `@route-to-tools <your request>` (as a saved/pinned rule or doc reference) |
-| Cline / Windsurf | reference the file path directly, or use their equivalent slash-command/rule syntax |
-| Generic / manual | paste or `@`-reference the file's contents alongside your request |
+| GitHub Copilot (VS Code) | `/route-to-tools <your request>` |
+| Cline | `/route-to-tools.md <your request>` (workflow files are invoked with the `.md` extension) |
+| Kilo Code | `/route-to-tools <your request>` (from `.kilo/commands/route-to-tools.md`) |
 
-Example (Continue.dev / VS Code Copilot Chat syntax — both use the same `/name` pattern):
+Example (Continue.dev / GitHub Copilot syntax — both use the same `/name` pattern):
 
 ```
 /route-to-tools Check if the login page renders correctly and show me any console errors
+```
+
+Example (Cline syntax — workflows are invoked with the file extension included):
+
+```
+/route-to-tools.md Check if the login page renders correctly and show me any console errors
 ```
 
 This sends the full routing-rules file as context alongside your message, so the model
